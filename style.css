@@ -1,135 +1,149 @@
-/* style.css - Glassmorphism y responsive */
+/* style.css - Futurista oscuro tipo Binance */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 body {
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, #0a0e1a 0%, #141b2b 100%);
     min-height: 100vh;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     padding: 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    color: #e0e0e0;
 }
 
 .container {
-    width: 100%;
     max-width: 1400px;
     margin: 0 auto;
+    background: rgba(10, 14, 26, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 24px;
+    padding: 30px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(240, 185, 11, 0.1) inset;
+    border: 1px solid rgba(42, 58, 90, 0.5);
 }
 
-/* Efecto glassmorphism para las tarjetas */
-.glass-card {
-    background: rgba(255, 255, 255, 0.25);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-    padding: 25px;
-    margin-bottom: 25px;
-    color: white;
-}
-
-/* Barra de navegación glass */
-.nav-bar {
-    display: flex;
-    gap: 15px;
-    margin-bottom: 30px;
-    flex-wrap: wrap;
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-radius: 50px;
-    padding: 15px 25px;
-    border: 1px solid rgba(255, 255, 255, 0.18);
-}
-
-.nav-bar a {
-    color: white;
-    text-decoration: none;
-    padding: 8px 20px;
-    border-radius: 30px;
-    background: rgba(255, 255, 255, 0.1);
-    transition: all 0.3s ease;
-    font-weight: 500;
+h1, h2, h3 {
+    font-weight: 600;
+    color: #ffffff;
     letter-spacing: 0.5px;
 }
 
-.nav-bar a:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: translateY(-2px);
-}
-
-/* Títulos */
-h1, h2, h3 {
-    font-weight: 300;
-    margin-bottom: 15px;
-    letter-spacing: 1px;
-}
-
 h1 {
-    font-size: 2.5rem;
-    background: linear-gradient(to right, #fff, #e0e0e0);
+    font-size: 2.2rem;
+    margin-bottom: 20px;
+    background: linear-gradient(135deg, #fff, #f0b90b);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
 }
 
-/* Inputs y botones con estilo glass */
+h2 {
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+    border-left: 4px solid #f0b90b;
+    padding-left: 15px;
+}
+
 input, button, select {
-    padding: 12px 20px;
-    margin: 5px;
-    border-radius: 30px;
+    padding: 12px 18px;
+    margin: 8px 5px;
+    border-radius: 12px;
     border: none;
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
-    color: white;
     font-size: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: all 0.3s ease;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.2s ease;
+    background: rgba(20, 30, 45, 0.8);
+    color: white;
+    border: 1px solid #2a3a5a;
 }
 
-input::placeholder {
-    color: rgba(255, 255, 255, 0.7);
-}
-
-input:focus, button:focus {
+input:focus, select:focus {
     outline: none;
-    background: rgba(255, 255, 255, 0.3);
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+    border-color: #f0b90b;
+    box-shadow: 0 0 0 2px rgba(240, 185, 11, 0.2);
 }
 
 button {
-    background: rgba(255, 255, 255, 0.3);
+    background: linear-gradient(135deg, #f0b90b, #d49f0a);
+    color: #0a0e1a;
+    font-weight: 700;
     cursor: pointer;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    border: none;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 15px rgba(240, 185, 11, 0.3);
 }
 
 button:hover {
-    background: rgba(255, 255, 255, 0.5);
-    transform: scale(1.02);
+    background: linear-gradient(135deg, #ffd700, #f0b90b);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(240, 185, 11, 0.5);
 }
 
-/* Contenedor del gráfico */
-.chart-container {
-    background: rgba(0, 0, 0, 0.2);
+button:active {
+    transform: translateY(0);
+}
+
+.nav-bar {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 15px 20px;
+    border-radius: 50px;
+    border: 1px solid #2a3a5a;
     backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
-    border-radius: 20px;
-    padding: 20px;
-    margin: 25px 0;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    height: 400px;
 }
 
-/* Cajas de saldo y precio */
+.nav-bar a {
+    color: #b0b8c5;
+    text-decoration: none;
+    padding: 10px 20px;
+    border-radius: 30px;
+    background: transparent;
+    transition: all 0.3s;
+    font-weight: 500;
+}
+
+.nav-bar a:hover {
+    background: rgba(240, 185, 11, 0.15);
+    color: #f0b90b;
+    box-shadow: 0 0 15px rgba(240, 185, 11, 0.3);
+}
+
+.chart-container {
+    height: 450px;
+    margin: 30px 0;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 20px;
+    border-radius: 20px;
+    border: 1px solid #2a3a5a;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.card {
+    background: rgba(10, 20, 30, 0.6);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    padding: 25px;
+    border-radius: 20px;
+    margin: 20px 0;
+    border: 1px solid rgba(42, 58, 90, 0.8);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.card:hover {
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(240, 185, 11, 0.3);
+    transform: translateY(-2px);
+}
+
 .flex-row {
     display: flex;
     justify-content: space-between;
@@ -139,113 +153,118 @@ button:hover {
 }
 
 .balance-box, .price-box {
-    flex: 1 1 250px;
-    background: rgba(0, 0, 0, 0.2);
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
-    border-radius: 20px;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.6), rgba(20, 30, 45, 0.8));
     padding: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    text-align: center;
+    border-radius: 16px;
+    min-width: 240px;
+    border: 1px solid #2a3a5a;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
 }
 
 .balance-box h3, .price-box h3 {
-    font-size: 1.2rem;
+    font-size: 1rem;
+    color: #9aa5b5;
     margin-bottom: 10px;
-    color: rgba(255, 255, 255, 0.9);
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .balance-box p, .price-box p {
-    font-size: 2rem;
-    font-weight: 600;
-    margin: 10px 0;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #f0b90b;
 }
 
-.price-box p span {
-    font-size: 1rem;
+.price-box p {
+    color: #4caf50; /* verde para precio */
+}
+
+#timestamp-precio {
+    font-size: 0.8rem;
+    color: #6c7a8a;
+}
+
+.estadisticas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.estadistica-item {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 20px;
+    border-radius: 16px;
+    backdrop-filter: blur(4px);
+    border: 1px solid #2a3a5a;
+}
+
+.estadistica-label {
     display: block;
-    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.85rem;
+    color: #9aa5b5;
+    margin-bottom: 8px;
+    text-transform: uppercase;
 }
 
-/* Área de mensajes */
-#mensajes, #estado, #mensaje-operacion, #staking-info, #mensaje-transferencia {
-    background: rgba(0, 0, 0, 0.2);
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
-    border-radius: 15px;
-    padding: 15px;
-    margin-top: 15px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: white;
+.estadistica-value {
+    display: block;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #f0b90b;
 }
 
-/* Responsive para móviles */
-@media (max-width: 768px) {
-    body {
-        padding: 10px;
-    }
-    
-    h1 {
-        font-size: 2rem;
-    }
-    
-    .nav-bar {
-        border-radius: 20px;
-        padding: 10px;
-        justify-content: center;
-    }
-    
-    .nav-bar a {
-        padding: 8px 15px;
-        font-size: 14px;
-    }
-    
-    .flex-row {
-        flex-direction: column;
-    }
-    
-    .balance-box, .price-box {
-        width: 100%;
-    }
-    
-    .chart-container {
-        height: 300px;
-        padding: 10px;
-    }
-    
-    input, button {
-        width: 100%;
-        margin: 5px 0;
-    }
-}
-
-/* Estilo para las tarjetas premium en perfil */
-#tarjetas {
-    display: flex;
-    flex-wrap: wrap;
+.tarjetas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: 15px;
-    margin-top: 15px;
+    margin-top: 20px;
 }
 
-#tarjetas li {
-    list-style: none;
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
-    border-radius: 30px;
-    padding: 10px 20px;
-    border: 1px solid rgba(255, 255, 255, 0.3);
+.tarjeta-item {
+    background: linear-gradient(135deg, #1e2a3a, #0f1a24);
+    padding: 20px;
+    border-radius: 16px;
+    text-align: center;
     font-weight: 600;
-    color: #fff;
-    text-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    border: 1px solid #f0b90b;
+    box-shadow: 0 0 20px rgba(240, 185, 11, 0.2);
+    color: white;
+    backdrop-filter: blur(5px);
 }
 
-/* Animaciones suaves */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+#mensajes, #estado, #mensaje-operacion, #staking-info {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 15px;
+    border-radius: 12px;
+    margin-top: 15px;
+    border-left: 4px solid #f0b90b;
+    font-size: 0.95rem;
 }
 
-.glass-card, .nav-bar, .chart-container {
-    animation: fadeIn 0.5s ease-out;
+/* Estilos para móviles */
+@media (max-width: 768px) {
+    body { padding: 10px; }
+    .container { padding: 20px; }
+    h1 { font-size: 1.8rem; }
+    .nav-bar { border-radius: 20px; padding: 10px; }
+    .nav-bar a { padding: 8px 15px; }
+    .balance-box p, .price-box p { font-size: 1.4rem; }
+    .estadistica-value { font-size: 1.3rem; }
+}
+
+/* Scrollbar personalizada (opcional) */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #1a2535;
+}
+::-webkit-scrollbar-thumb {
+    background: #3a4a60;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #f0b90b;
 }
