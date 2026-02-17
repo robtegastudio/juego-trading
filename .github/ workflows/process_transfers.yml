@@ -1,0 +1,96 @@
+name: Process Transfers
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  process-transfer:
+    if: startsWith(github.event.issue.title, 'TRANSFER:')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Process transfer
+        env:
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python -c "
+import json, os, sys
+
+# Parsear título: TRANSFER:origen:destino:monto
+titulo = os.environ['ISSUE_TITLE']
+partes = titulo.split(':')
+if len(partes) != 4:
+    print('Formato incorrecto')
+    sys.exit(1)
+_, origen, destino, monto_str = partes
+try:
+    monto = float(monto_str)
+except:
+    print('Monto inválido')
+    sys.exit(1)
+
+# Leer users.json
+users_file = 'users.json'
+if os.path.exists(users_file):
+    with open(users_file) as f:
+        users = json.load(f)
+else:
+    users = {}
+
+# Asegurar que existan los usuarios
+if origen not in users:
+    users[origen] = {'saldoUSDT': 1000, 'btc': 0, 'tarjetas': []}
+if destino not in users:
+    users[destino] = {'saldoUSDT': 1000, 'btc': 0, 'tarjetas': []}
+
+# Verificar saldo
+if users[origen]['saldoUSDT'] < monto:
+    print('Saldo insuficiente')
+    # Opcional: comentar en el issue
+    sys.exit(1)
+
+# Realizar transferencia
+users[origen]['saldoUSDT'] -= monto
+users[destino]['saldoUSDT'] += monto
+
+# Otorgar tarjetas premium (ejemplo: si el destino alcanza 5000, dar tarjeta)
+if users[destino]['saldoUSDT'] >= 5000 and 'Tarjeta Bronce' not in users[destino]['tarjetas']:
+    users[destino]['tarjetas'].append('Tarjeta Bronce')
+if users[destino]['saldoUSDT'] >= 10000 and 'Tarjeta Plata' not in users[destino]['tarjetas']:
+    users[destino]['tarjetas'].append('Tarjeta Plata')
+if users[destino]['saldoUSDT'] >= 20000 and 'Tarjeta Oro' not in users[destino]['tarjetas']:
+    users[destino]['tarjetas'].append('Tarjeta Oro')
+
+# Guardar users.json
+with open(users_file, 'w') as f:
+    json.dump(users, f, indent=2)
+
+# Comentar en el issue que se procesó
+import requests
+url = f'https://api.github.com/repos/${{ github.repository }}/issues/{os.environ[\"ISSUE_NUMBER\"]}/comments'
+headers = {'Authorization': f'token {os.environ[\"GITHUB_TOKEN\"]}'}
+data = {'body': f'✅ Transferencia de {monto} USDT de {origen} a {destino} procesada correctamente.'}
+requests.post(url, json=data, headers=headers)
+"
+
+      - name: Commit and push changes
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add users.json
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Process transfer #${{ github.event.issue.number }} [skip ci]" && git push)
+
+      - name: Close issue
+        uses: peter-evans/close-issue@v3
+        with:
+          issue-number: ${{ github.event.issue.number }}
+          comment: Transferencia completada. Issue cerrado automáticamente.
