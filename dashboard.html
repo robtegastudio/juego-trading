@@ -17,17 +17,16 @@
         </div>
 
         <h1>Panel de Trading</h1>
-        
         <div class="flex-row">
             <div class="balance-box">
-                <h3>💰 Tu saldo</h3>
-                <p><span id="saldo-usdt">0.00</span> USDT</p>
-                <p><span id="saldo-btc">0.0000</span> BTC</p>
+                <h3>Tu saldo</h3>
+                <p>USDT: <span id="saldo-usdt">0.00</span></p>
+                <p>BTC: <span id="saldo-btc">0.0000</span></p>
             </div>
             <div class="price-box">
-                <h3>📈 Precio BTC</h3>
+                <h3>Precio BTC</h3>
                 <p>$<span id="precio-btc">0.00</span></p>
-                <p><span id="timestamp-precio">---</span></p>
+                <p>Actualizado: <span id="timestamp-precio">---</span></p>
             </div>
         </div>
 
@@ -35,9 +34,9 @@
             <canvas id="graficoBTC"></canvas>
         </div>
 
-        <div class="glass-card">
-            <h3>🔄 Comprar / Vender BTC</h3>
-            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <div class="card">
+            <h3>Comprar / Vender BTC</h3>
+            <div class="flex-row">
                 <input type="number" id="cantidad" placeholder="Cantidad BTC" step="0.001" min="0">
                 <button onclick="comprar()">Comprar BTC</button>
                 <button onclick="vender()">Vender BTC</button>
@@ -45,20 +44,49 @@
             <p id="mensaje-operacion"></p>
         </div>
 
-        <div class="glass-card">
-            <h3>⏳ Staking (ingreso pasivo)</h3>
+        <div class="card">
+            <h3>Staking (ingreso pasivo)</h3>
             <p>Bloquea USDT por 24h y gana hasta 5% diario (simulado)</p>
             <input type="number" id="staking-cantidad" placeholder="Cantidad USDT" step="1" min="0">
             <button onclick="iniciarStaking()">Iniciar Staking</button>
             <p id="staking-info"></p>
         </div>
 
-        <div id="mensajes" class="glass-card" style="display: none;"></div>
+        <div class="card">
+            <h3>🎲 Minijuegos para ganar USDT</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap:15px;">
+                <div>
+                    <h4>Cara o cruz</h4>
+                    <input type="number" id="apuesta-cc" placeholder="Apuesta USDT" step="1">
+                    <select id="eleccion-cc">
+                        <option value="cara">Cara</option>
+                        <option value="cruz">Cruz</option>
+                    </select>
+                    <button onclick="jugar('caraocruz')">Jugar</button>
+                </div>
+                <div>
+                    <h4>Dados (mayor que 3)</h4>
+                    <input type="number" id="apuesta-dados" placeholder="Apuesta USDT" step="1">
+                    <button onclick="jugar('dados')">Lanzar dados</button>
+                </div>
+                <div>
+                    <h4>Ruleta (número 0-36)</h4>
+                    <input type="number" id="apuesta-ruleta" placeholder="Apuesta USDT" step="1">
+                    <input type="number" id="numero-ruleta" placeholder="Número" min="0" max="36">
+                    <button onclick="jugar('ruleta')">Girar</button>
+                </div>
+            </div>
+            <p id="mensaje-juego"></p>
+        </div>
+
+        <div id="mensajes"></div>
     </div>
 
-    <script src="script.js"></script>
     <script>
-        // Variables globales
+        // ⚠️ REEMPLAZA CON TUS DATOS
+        const GITHUB_TOKEN = 'poner-tu-token-aqui';
+        const REPO = 'robtegastudio/juego-trading';
+
         let usuario = localStorage.getItem('usuario');
         if (!usuario) window.location.href = 'index.html';
 
@@ -67,21 +95,18 @@
         let precioBTC = 50000;
         let historialPrecios = [];
         let chart;
-        let usuariosData = {};
 
         async function cargarDatos() {
             try {
                 const response = await fetch('users.json?t=' + Date.now());
                 if (response.ok) {
-                    usuariosData = await response.json();
-                    if (usuariosData[usuario]) {
-                        saldoUSDT = usuariosData[usuario].saldoUSDT || 1000;
-                        saldoBTC = usuariosData[usuario].btc || 0;
+                    const users = await response.json();
+                    if (users[usuario]) {
+                        saldoUSDT = users[usuario].saldoUSDT || 1000;
+                        saldoBTC = users[usuario].btc || 0;
                     }
                 }
-            } catch (e) {
-                console.log('Error cargando users.json', e);
-            }
+            } catch (e) {}
             actualizarInterfazSaldo();
             actualizarPrecio();
         }
@@ -100,7 +125,7 @@
                     document.getElementById('precio-btc').innerText = precioBTC.toFixed(2);
                     const fecha = new Date(data.BTC.timestamp * 1000);
                     document.getElementById('timestamp-precio').innerText = fecha.toLocaleTimeString();
-                    
+
                     historialPrecios.push(precioBTC);
                     if (historialPrecios.length > 30) historialPrecios.shift();
                     if (chart) {
@@ -109,9 +134,7 @@
                         chart.update();
                     }
                 }
-            } catch (e) {
-                console.log('Error cargando prices.json', e);
-            }
+            } catch (e) {}
         }
 
         function initChart() {
@@ -123,8 +146,8 @@
                     datasets: [{
                         label: 'Precio BTC (USDT)',
                         data: [],
-                        borderColor: '#fff',
-                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                        borderColor: '#f0b90b',
+                        backgroundColor: 'rgba(240, 185, 11, 0.1)',
                         tension: 0.1,
                         fill: true
                     }]
@@ -132,9 +155,7 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    scales: {
-                        y: { grid: { color: 'rgba(255,255,255,0.1)' } }
-                    }
+                    scales: { y: { grid: { color: '#2a3a5a' } } }
                 }
             });
         }
@@ -153,7 +174,7 @@
             saldoUSDT -= costo;
             saldoBTC += cantidad;
             actualizarInterfazSaldo();
-            document.getElementById('mensaje-operacion').innerText = `✅ Comprados ${cantidad.toFixed(4)} BTC por ${costo.toFixed(2)} USDT`;
+            document.getElementById('mensaje-operacion').innerText = `Comprados ${cantidad.toFixed(4)} BTC por ${costo.toFixed(2)} USDT`;
             guardarCambiosLocales();
         };
 
@@ -171,16 +192,13 @@
             saldoBTC -= cantidad;
             saldoUSDT += ganancia;
             actualizarInterfazSaldo();
-            document.getElementById('mensaje-operacion').innerText = `✅ Vendidos ${cantidad.toFixed(4)} BTC por ${ganancia.toFixed(2)} USDT`;
+            document.getElementById('mensaje-operacion').innerText = `Vendidos ${cantidad.toFixed(4)} BTC por ${ganancia.toFixed(2)} USDT`;
             guardarCambiosLocales();
         };
 
         function guardarCambiosLocales() {
             localStorage.setItem('saldoUSDT_' + usuario, saldoUSDT);
             localStorage.setItem('saldoBTC_' + usuario, saldoBTC);
-            if (!usuariosData[usuario]) usuariosData[usuario] = {};
-            usuariosData[usuario].saldoUSDT = saldoUSDT;
-            usuariosData[usuario].btc = saldoBTC;
         }
 
         window.iniciarStaking = function() {
@@ -193,7 +211,58 @@
                 document.getElementById('staking-info').innerText = 'Saldo insuficiente';
                 return;
             }
-            document.getElementById('staking-info').innerText = `🔒 Has bloqueado ${cantidad} USDT. Vuelve mañana para reclamar intereses.`;
+            document.getElementById('staking-info').innerText = `Has bloqueado ${cantidad} USDT. Vuelve mañana para reclamar intereses (simulado).`;
+        };
+
+        window.jugar = async function(juego) {
+            let apuesta, eleccion;
+            if (juego === 'caraocruz') {
+                apuesta = parseFloat(document.getElementById('apuesta-cc').value);
+                eleccion = document.getElementById('eleccion-cc').value;
+            } else if (juego === 'dados') {
+                apuesta = parseFloat(document.getElementById('apuesta-dados').value);
+            } else if (juego === 'ruleta') {
+                apuesta = parseFloat(document.getElementById('apuesta-ruleta').value);
+                eleccion = parseInt(document.getElementById('numero-ruleta').value);
+            }
+
+            if (!apuesta || apuesta <= 0) {
+                document.getElementById('mensaje-juego').innerText = 'Apuesta inválida';
+                return;
+            }
+            if (apuesta > saldoUSDT) {
+                document.getElementById('mensaje-juego').innerText = 'Saldo insuficiente';
+                return;
+            }
+
+            // Simular resultado local
+            let gana = false;
+            if (juego === 'caraocruz') {
+                const resultado = Math.random() < 0.5 ? 'cara' : 'cruz';
+                gana = (resultado === eleccion);
+            } else if (juego === 'dados') {
+                const dado = Math.floor(Math.random() * 6) + 1;
+                gana = dado > 3;
+            } else if (juego === 'ruleta') {
+                const numero = Math.floor(Math.random() * 37);
+                gana = (numero === eleccion);
+            }
+
+            document.getElementById('mensaje-juego').innerText = gana ? '🎉 ¡Ganaste! (procesando...)' : '😞 Perdiste (procesando...)';
+
+            const titulo = `JUEGO:${usuario}:${juego}:${apuesta}:${gana ? 'gana' : 'pierde'}`;
+            try {
+                await fetch(`https://api.github.com/repos/${REPO}/issues`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `token ${GITHUB_TOKEN}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ title: titulo, body: 'Resultado de juego' })
+                });
+            } catch (e) {
+                console.error('Error registrando juego');
+            }
         };
 
         window.cerrarSesion = function() {
