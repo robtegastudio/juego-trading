@@ -14,7 +14,7 @@
     "tarjetas": [],
     "movimientos": [],
     "bloqueado": false,
-    "rol": "user",
+    "rol": "admin",
     "password": "2121."
   }
 }
