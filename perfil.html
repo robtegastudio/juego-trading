@@ -19,9 +19,8 @@
         <h1>Mi Perfil</h1>
 
         <div class="card">
-            <h2>Tarjetas virtuales</h2>
+            <h2>Tus tarjetas virtuales</h2>
             <div id="tarjetas-container">Cargando...</div>
-            <button onclick="solicitarTarjeta()" id="btn-solicitar">Solicitar nueva tarjeta (100 USDT)</button>
         </div>
 
         <div class="card">
@@ -64,15 +63,14 @@
             try {
                 const res = await fetch('users.json?t=' + Date.now());
                 const users = await res.json();
-                const userData = users[usuario] || { saldoUSDT: 1000, btc: 0, tarjetas: [] };
-                
+                const userData = users[usuario] || { saldoUSDT: 1000, btc: 0, tarjetas: [], movimientos: [] };
+                document.getElementById('saldo-usdt').innerText = userData.saldoUSDT.toFixed(2);
+                document.getElementById('saldo-btc').innerText = (userData.btc || 0).toFixed(4);
+
                 // Mostrar enlace admin si el rol es admin
                 if (users[usuario] && users[usuario].rol === 'admin') {
                     document.getElementById('admin-link').style.display = 'inline-block';
                 }
-
-                document.getElementById('saldo-usdt').innerText = userData.saldoUSDT.toFixed(2);
-                document.getElementById('saldo-btc').innerText = (userData.btc || 0).toFixed(4);
 
                 // Precio para valor total
                 let precioBTC = 50000;
@@ -86,16 +84,16 @@
                 const valorTotal = userData.saldoUSDT + (userData.btc || 0) * precioBTC;
                 document.getElementById('valor-total').innerText = valorTotal.toFixed(2) + ' USDT';
 
-                // Mostrar tarjetas
+                // Mostrar tarjetas (ya no hay botón para solicitar)
                 const tarjetas = userData.tarjetas || [];
                 let html = '';
                 if (tarjetas.length === 0) {
-                    html = '<p>No tienes tarjetas aún.</p>';
+                    html = '<p>Aún no tienes tarjetas. Sigue acumulando saldo para obtenerlas automáticamente.</p>';
                 } else {
                     html = '<div class="tarjetas-grid">';
                     tarjetas.forEach(t => {
                         html += `<div class="tarjeta-item" style="background: linear-gradient(135deg, ${t.color1}, ${t.color2});">
-                            <div style="font-size:1.2rem;">${t.tipo}</div>
+                            <div style="font-size:1.2rem;">💳 ${t.tipo.toUpperCase()}</div>
                             <div>**** **** **** ${t.ultimos4}</div>
                             <div>CVV: ${t.cvv}</div>
                             <div>Exp: ${t.mes}/${t.anio}</div>
@@ -105,10 +103,11 @@
                 }
                 document.getElementById('tarjetas-container').innerHTML = html;
 
-                // Logros simulados
+                // Logros basados en saldo (esto es solo visual, las tarjetas ya están asignadas)
                 let logros = [];
                 if (userData.saldoUSDT >= 5000) logros.push('💰 Acumulador de plata (5000 USDT)');
                 if (userData.saldoUSDT >= 10000) logros.push('💎 Acumulador de oro (10000 USDT)');
+                if (userData.saldoUSDT >= 20000) logros.push('👑 Acumulador de diamante (20000 USDT)');
                 if (userData.btc >= 0.1) logros.push('🪙 Ballena de BTC (0.1 BTC)');
                 if (logros.length === 0) logros.push('Sin logros aún');
                 document.getElementById('logros-lista').innerHTML = '<ul>' + logros.map(l => `<li>${l}</li>`).join('') + '</ul>';
@@ -117,10 +116,6 @@
                 document.getElementById('tarjetas-container').innerHTML = 'Error al cargar';
             }
         }
-
-        window.solicitarTarjeta = async function() {
-            alert('Función en desarrollo. Por ahora, el admin puede enviarte tarjetas.');
-        };
 
         window.cerrarSesion = function() {
             localStorage.removeItem('usuario');
