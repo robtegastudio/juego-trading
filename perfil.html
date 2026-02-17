@@ -12,6 +12,7 @@
             <a href="dashboard.html">Trading</a>
             <a href="transferir.html">Transferir</a>
             <a href="perfil.html">Mi Perfil</a>
+            <a href="admin.html" id="admin-link" style="display:none;">Admin</a>
             <a href="#" onclick="cerrarSesion()">Cerrar sesión</a>
         </div>
 
@@ -64,6 +65,12 @@
                 const res = await fetch('users.json?t=' + Date.now());
                 const users = await res.json();
                 const userData = users[usuario] || { saldoUSDT: 1000, btc: 0, tarjetas: [] };
+                
+                // Mostrar enlace admin si el rol es admin
+                if (users[usuario] && users[usuario].rol === 'admin') {
+                    document.getElementById('admin-link').style.display = 'inline-block';
+                }
+
                 document.getElementById('saldo-usdt').innerText = userData.saldoUSDT.toFixed(2);
                 document.getElementById('saldo-btc').innerText = (userData.btc || 0).toFixed(4);
 
@@ -112,7 +119,6 @@
         }
 
         window.solicitarTarjeta = async function() {
-            // Simplemente muestra mensaje; en versión completa, descontaría saldo y crearía issue ADMIN:ENVIAR_TARJETA
             alert('Función en desarrollo. Por ahora, el admin puede enviarte tarjetas.');
         };
 
