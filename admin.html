@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="nav-bar">
+            <a href="dashboard.html">Trading</a>
+            <a href="transferir.html">Transferir</a>
+            <a href="perfil.html">Mi Perfil</a>
+            <a href="admin.html" style="background: #f0b90b; color: black;">Admin</a>
+            <a href="#" onclick="cerrarSesion()">Cerrar sesión</a>
+        </div>
+
+        <h1>🔮 Panel de Control Illuminati</h1>
+        <p>Bienvenido, amo del universo. Aquí puedes controlarlo todo.</p>
+
+        <div class="card">
+            <h2>Usuarios registrados</h2>
+            <div id="lista-usuarios">Cargando...</div>
+        </div>
+
+        <div class="card">
+            <h2>Acciones rápidas</h2>
+            <input type="text" id="admin-usuario" placeholder="Usuario objetivo">
+            <input type="number" id="admin-monto" placeholder="Monto (si aplica)">
+            <button onclick="adminAction('SET_SALDO')">Fijar saldo</button>
+            <button onclick="adminAction('BLOQUEAR')">Bloquear</button>
+            <button onclick="adminAction('DESBLOQUEAR')">Desbloquear</button>
+            <button onclick="adminAction('ENVIAR_TARJETA')">Enviar tarjeta premium</button>
+            <p id="admin-mensaje"></p>
+        </div>
+
+        <div class="card">
+            <h2>Control del mercado</h2>
+            <input type="number" id="nuevo-precio" placeholder="Nuevo precio BTC" step="100">
+            <button onclick="cambiarPrecio()">Fijar precio</button>
+            <button onclick="volatilidad()">Inyectar volatilidad</button>
+        </div>
+
+        <div class="card">
+            <h2>Ver movimientos de un usuario</h2>
+            <input type="text" id="ver-usuario" placeholder="Usuario">
+            <button onclick="verMovimientos()">Ver movimientos</button>
+            <div id="movimientos-usuario"></div>
+        </div>
+    </div>
+
+    <script>
+        const ADMIN_USER = 'robtegastudio'; // ← Cambia por tu usuario
+        const GITHUB_TOKEN = 'poner-tu-token-aqui';
+        const REPO = 'robtegastudio/juego-trading';
+
+        // Verificar que el usuario logueado sea admin
+        const usuario = localStorage.getItem('usuario');
+        if (!usuario || usuario !== ADMIN_USER) {
+            alert('Acceso denegado');
+            window.location.href = 'dashboard.html';
+        }
+
+        async function cargarUsuarios() {
+            try {
+                const res = await fetch('users.json?t=' + Date.now());
+                const users = await res.json();
+                let html = '<table><tr><th>Usuario</th><th>Saldo USDT</th><th>BTC</th><th>Bloqueado</th><th>Rol</th></tr>';
+                for (let u in users) {
+                    html += `<tr>
+                        <td>${u}</td>
+                        <td>${users[u].saldoUSDT.toFixed(2)}</td>
+                        <td>${(users[u].btc || 0).toFixed(4)}</td>
+                        <td>${users[u].bloqueado ? '🔴 Sí' : '🟢 No'}</td>
+                        <td>${users[u].rol || 'user'}</td>
+                    </tr>`;
+                }
+                html += '</table>';
+                document.getElementById('lista-usuarios').innerHTML = html;
+            } catch (e) {
+                document.getElementById('lista-usuarios').innerHTML = 'Error cargando usuarios';
+            }
+        }
+
+        async function adminAction(accion) {
+            const objetivo = document.getElementById('admin-usuario').value.trim();
+            const monto = document.getElementById('admin-monto').value;
+            let titulo = `ADMIN:${accion}`;
+            if (objetivo) titulo += `:${objetivo}`;
+            if (monto) titulo += `:${monto}`;
+            
+            try {
+                const response = await fetch(`https://api.github.com/repos/${REPO}/issues`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `token ${GITHUB_TOKEN}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        title: titulo,
+                        body: `Acción admin: ${accion} sobre ${objetivo}`
+                    })
+                });
+                if (response.ok) {
+                    document.getElementById('admin-mensaje').innerText = '✅ Acción enviada, se procesará en breve.';
+                } else {
+                    const err = await response.json();
+                    document.getElementById('admin-mensaje').innerText = `Error: ${err.message}`;
+                }
+            } catch (e) {
+                document.getElementById('admin-mensaje').innerText = 'Error de red';
+            }
+        }
+
+        async function cambiarPrecio() {
+            const precio = document.getElementById('nuevo-precio').value;
+            if (!precio) return;
+            const titulo = `ADMIN:SET_PRECIO:${precio}`;
+            try {
+                await fetch(`https://api.github.com/repos/${REPO}/issues`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `token ${GITHUB_TOKEN}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ title: titulo, body: 'Cambio manual de precio' })
+                });
+                alert('Petición enviada');
+            } catch (e) {
+                alert('Error');
+            }
+        }
+
+        function volatilidad() {
+            alert('Función de volatilidad: se inyectará ruido en el mercado. (Implementar como Action programado)');
+        }
+
+        async function verMovimientos() {
+            const u = document.getElementById('ver-usuario').value.trim();
+            try {
+                const res = await fetch('users.json?t=' + Date.now());
+                const users = await res.json();
+                if (!users[u]) {
+                    document.getElementById('movimientos-usuario').innerHTML = 'Usuario no existe';
+                    return;
+                }
+                const movs = users[u].movimientos || [];
+                let html = '<h3>Movimientos</h3><ul>';
+                movs.forEach(m => html += `<li>${JSON.stringify(m)}</li>`);
+                html += '</ul>';
+                document.getElementById('movimientos-usuario').innerHTML = html;
+            } catch (e) {
+                document.getElementById('movimientos-usuario').innerHTML = 'Error';
+            }
+        }
+
+        window.onload = cargarUsuarios;
+        window.cerrarSesion = () => { localStorage.removeItem('usuario'); window.location.href = 'index.html'; };
+    </script>
+
+    <style>
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #2a3a5a; }
+        th { background: #1e2a3a; color: #f0b90b; }
+    </style>
+</body>
+</html>
