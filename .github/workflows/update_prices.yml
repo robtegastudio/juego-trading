@@ -1,18 +1,21 @@
 name: Update Prices
 on:
   schedule:
-    - cron: '*/5 * * * *'   # cada 5 minutos
+    - cron: '*/5 * * * *'
   workflow_dispatch:
 
 jobs:
   update-prices:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
+
       - name: Generate prices
         run: |
           python -c "
@@ -37,9 +40,11 @@ with open(price_file, 'w') as f:
         'BTC': {'precio': round(new_btc, 2), 'timestamp': time.time()}
     }, f, indent=2)
 "
+
       - name: Commit and push if changed
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add prices.json
-          git diff --quiet && git diff --staged --quiet || (git commit -m "Update prices [skip ci]" && git push)
+          git diff --quiet && git diff --staged --quiet || git commit -m "Update prices [skip ci]"
+          git push
