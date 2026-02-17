@@ -15,34 +15,35 @@
             <a href="#" onclick="cerrarSesion()">Cerrar sesión</a>
         </div>
 
-        <h1>Transferir USDT</h1>
-        
-        <div class="glass-card">
-            <h3>💸 Nueva transferencia</h3>
+        <h1>Transferir USDT a otro usuario</h1>
+        <div class="card">
+            <h3>Nueva transferencia</h3>
             <input type="text" id="destino" placeholder="Nombre de usuario destino" required>
             <input type="number" id="monto" placeholder="Cantidad USDT" step="1" min="1" required>
             <button onclick="transferir()">Enviar</button>
             <p id="mensaje-transferencia"></p>
         </div>
 
-        <div class="glass-card">
-            <h3>📋 Instrucciones</h3>
+        <div class="card">
+            <h3>Instrucciones</h3>
             <p>Las transferencias se procesan mediante Issues de GitHub. Puede tomar hasta 2 minutos en completarse.</p>
             <p>Tu saldo se actualizará automáticamente cuando el Issue sea procesado.</p>
         </div>
 
-        <div id="estado" class="glass-card"></div>
+        <div id="estado"></div>
     </div>
 
-    <script src="script.js"></script>
     <script>
+        const GITHUB_TOKEN = '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';
+        const REPO = 'robtegastudio/juego-trading';
+
         let usuario = localStorage.getItem('usuario');
         if (!usuario) window.location.href = 'index.html';
 
         window.transferir = async function() {
             const destino = document.getElementById('destino').value.trim();
             const monto = parseFloat(document.getElementById('monto').value);
-            
+
             if (!destino || isNaN(monto) || monto <= 0) {
                 document.getElementById('mensaje-transferencia').innerText = 'Datos inválidos';
                 return;
@@ -60,10 +61,6 @@
 
             document.getElementById('estado').innerHTML = '<p>⏳ Creando solicitud de transferencia...</p>';
 
-            // ⚠️ REEMPLAZA ESTOS VALORES CON LOS TUYOS
-            const GITHUB_TOKEN = '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';
-            const REPO = 'robtegastudio/juego-trading';
-
             const titulo = `TRANSFER:${usuario}:${destino}:${monto}`;
             const cuerpo = `Transferencia de ${monto} USDT de ${usuario} a ${destino}`;
 
@@ -75,10 +72,7 @@
                         'Accept': 'application/vnd.github.v3+json',
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({
-                        title: titulo,
-                        body: cuerpo
-                    })
+                    body: JSON.stringify({ title: titulo, body: cuerpo })
                 });
 
                 if (response.ok) {
@@ -99,7 +93,4 @@
         };
     </script>
 </body>
-
 </html>
-
-
