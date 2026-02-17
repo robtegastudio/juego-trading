@@ -20,7 +20,6 @@ def main():
     else:
         users = {}
 
-    # Inicializar estructura para nuevos usuarios
     def usuario_default():
         return {
             'saldoUSDT': 1000,
@@ -31,13 +30,11 @@ def main():
             'rol': 'user'
         }
 
-    # Función para comentar en el issue
     def comment(msg):
         url = f'https://api.github.com/repos/{repo}/issues/{issue_number}/comments'
         headers = {'Authorization': f'token {github_token}'}
         requests.post(url, json={'body': msg}, headers=headers)
 
-    # Procesar según tipo
     if tipo == 'REGISTER':
         _, usuario, password = partes
         if usuario in users:
@@ -59,7 +56,6 @@ def main():
         else:
             users[origen]['saldoUSDT'] -= monto
             users[destino]['saldoUSDT'] += monto
-            # Registrar movimiento
             users[origen]['movimientos'].append({
                 'tipo': 'transferencia_enviada',
                 'destino': destino,
@@ -110,12 +106,45 @@ def main():
             with open(price_file, 'w') as f:
                 json.dump(prices, f, indent=2)
             comment(f'✅ Precio BTC fijado en {precio} USDT')
-        # Puedes añadir más comandos: enviar tarjeta, etc.
+        elif accion == 'ENVIAR_TARJETA':
+            _, _, objetivo, tipo_tarjeta = partes
+            if objetivo not in users:
+                comment('❌ Usuario no existe')
+                return
+            # Generar datos de tarjeta ficticios
+            import random
+            num = f'{random.randint(1000,9999)} {random.randint(1000,9999)} {random.randint(1000,9999)} {random.randint(1000,9999)}'
+            ultimos4 = num[-4:]
+            cvv = f'{random.randint(100,999)}'
+            mes = random.randint(1,12)
+            anio = random.randint(2025,2030)
+            color1, color2 = {
+                'bronce': ('#cd7f32', '#b06d2e'),
+                'plata': ('#c0c0c0', '#a0a0a0'),
+                'oro': ('#ffd700', '#e5c100'),
+                'platino': ('#e5e4e2', '#c0c0c0'),
+                'negro': ('#2c2c2c', '#1a1a1a')
+            }.get(tipo_tarjeta, ('#667eea', '#764ba2'))
+            tarjeta = {
+                'tipo': tipo_tarjeta,
+                'numero': num,
+                'ultimos4': ultimos4,
+                'cvv': cvv,
+                'mes': mes,
+                'anio': anio,
+                'color1': color1,
+                'color2': color2
+            }
+            if 'tarjetas' not in users[objetivo]:
+                users[objetivo]['tarjetas'] = []
+            users[objetivo]['tarjetas'].append(tarjeta)
+            comment(f'✅ Tarjeta {tipo_tarjeta} enviada a {objetivo}')
+        # Puedes añadir más comandos admin aquí
 
     elif tipo == 'JUEGO':
-        _, usuario, juego, apuesta_str, resultado_str = partes
+        _, usuario, juego, apuesta_str, resultado = partes
         apuesta = float(apuesta_str)
-        resultado = resultado_str == 'gana'
+        gana = (resultado == 'gana')
         if usuario not in users:
             comment('❌ Usuario no existe')
         elif users[usuario].get('bloqueado', False):
@@ -123,10 +152,9 @@ def main():
         elif users[usuario]['saldoUSDT'] < apuesta:
             comment('❌ Saldo insuficiente')
         else:
-            if resultado:
-                ganancia = apuesta * 2  # Ejemplo: apuesta duplica
-                users[usuario]['saldoUSDT'] += ganancia - apuesta  # ya restamos apuesta?
-                # Mejor: restar apuesta y sumar ganancia total
+            if gana:
+                # Determinar ganancia según el juego (simplificado: apuesta * 2 para todos)
+                ganancia = apuesta * 2
                 users[usuario]['saldoUSDT'] = users[usuario]['saldoUSDT'] - apuesta + ganancia
                 comment(f'🎉 {usuario} ganó {ganancia} USDT en {juego}')
             else:
@@ -135,7 +163,7 @@ def main():
             users[usuario]['movimientos'].append({
                 'tipo': f'juego_{juego}',
                 'apuesta': apuesta,
-                'resultado': 'ganó' if resultado else 'perdió',
+                'resultado': 'ganó' if gana else 'perdió',
                 'fecha': datetime.now().isoformat()
             })
 
