@@ -13,6 +13,7 @@
             <a href="dashboard.html">Trading</a>
             <a href="transferir.html">Transferir</a>
             <a href="perfil.html">Mi Perfil</a>
+            <a href="admin.html" id="admin-link" style="display:none;">Admin</a>
             <a href="#" onclick="cerrarSesion()">Cerrar sesión</a>
         </div>
 
@@ -104,6 +105,11 @@
                     if (users[usuario]) {
                         saldoUSDT = users[usuario].saldoUSDT || 1000;
                         saldoBTC = users[usuario].btc || 0;
+                        
+                        // Mostrar enlace admin si el rol es admin
+                        if (users[usuario].rol === 'admin') {
+                            document.getElementById('admin-link').style.display = 'inline-block';
+                        }
                     }
                 }
             } catch (e) {}
