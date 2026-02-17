@@ -2,7 +2,17 @@
   "test": {
     "saldoUSDT": 10.0,
     "btc": 0,
-    "tarjetas": [],
+    "tarjetas": [
+      {
+        "tipo": "bronce",
+        "ultimos4": "2233",
+        "cvv": "538",
+        "mes": "08",
+        "anio": "2028",
+        "color1": "#cd7f32",
+        "color2": "#b06e2b"
+      }
+    ],
     "movimientos": [],
     "bloqueado": false,
     "rol": "user",
