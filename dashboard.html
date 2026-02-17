@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Trading</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="nav-bar">
+            <a href="dashboard.html">Trading</a>
+            <a href="transferir.html">Transferir</a>
+            <a href="perfil.html">Mi Perfil</a>
+            <a href="#" onclick="cerrarSesion()">Cerrar sesión</a>
+        </div>
+
+        <h1>Panel de Trading</h1>
+        
+        <div class="flex-row">
+            <div class="balance-box">
+                <h3>💰 Tu saldo</h3>
+                <p><span id="saldo-usdt">0.00</span> USDT</p>
+                <p><span id="saldo-btc">0.0000</span> BTC</p>
+            </div>
+            <div class="price-box">
+                <h3>📈 Precio BTC</h3>
+                <p>$<span id="precio-btc">0.00</span></p>
+                <p><span id="timestamp-precio">---</span></p>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <canvas id="graficoBTC"></canvas>
+        </div>
+
+        <div class="glass-card">
+            <h3>🔄 Comprar / Vender BTC</h3>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <input type="number" id="cantidad" placeholder="Cantidad BTC" step="0.001" min="0">
+                <button onclick="comprar()">Comprar BTC</button>
+                <button onclick="vender()">Vender BTC</button>
+            </div>
+            <p id="mensaje-operacion"></p>
+        </div>
+
+        <div class="glass-card">
+            <h3>⏳ Staking (ingreso pasivo)</h3>
+            <p>Bloquea USDT por 24h y gana hasta 5% diario (simulado)</p>
+            <input type="number" id="staking-cantidad" placeholder="Cantidad USDT" step="1" min="0">
+            <button onclick="iniciarStaking()">Iniciar Staking</button>
+            <p id="staking-info"></p>
+        </div>
+
+        <div id="mensajes" class="glass-card" style="display: none;"></div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // Variables globales
+        let usuario = localStorage.getItem('usuario');
+        if (!usuario) window.location.href = 'index.html';
+
+        let saldoUSDT = 1000;
+        let saldoBTC = 0;
+        let precioBTC = 50000;
+        let historialPrecios = [];
+        let chart;
+        let usuariosData = {};
+
+        async function cargarDatos() {
+            try {
+                const response = await fetch('users.json?t=' + Date.now());
+                if (response.ok) {
+                    usuariosData = await response.json();
+                    if (usuariosData[usuario]) {
+                        saldoUSDT = usuariosData[usuario].saldoUSDT || 1000;
+                        saldoBTC = usuariosData[usuario].btc || 0;
+                    }
+                }
+            } catch (e) {
+                console.log('Error cargando users.json', e);
+            }
+            actualizarInterfazSaldo();
+            actualizarPrecio();
+        }
+
+        function actualizarInterfazSaldo() {
+            document.getElementById('saldo-usdt').innerText = saldoUSDT.toFixed(2);
+            document.getElementById('saldo-btc').innerText = saldoBTC.toFixed(4);
+        }
+
+        async function actualizarPrecio() {
+            try {
+                const response = await fetch('prices.json?t=' + Date.now());
+                if (response.ok) {
+                    const data = await response.json();
+                    precioBTC = data.BTC.precio;
+                    document.getElementById('precio-btc').innerText = precioBTC.toFixed(2);
+                    const fecha = new Date(data.BTC.timestamp * 1000);
+                    document.getElementById('timestamp-precio').innerText = fecha.toLocaleTimeString();
+                    
+                    historialPrecios.push(precioBTC);
+                    if (historialPrecios.length > 30) historialPrecios.shift();
+                    if (chart) {
+                        chart.data.labels = historialPrecios.map((_, i) => i);
+                        chart.data.datasets[0].data = historialPrecios;
+                        chart.update();
+                    }
+                }
+            } catch (e) {
+                console.log('Error cargando prices.json', e);
+            }
+        }
+
+        function initChart() {
+            const ctx = document.getElementById('graficoBTC').getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Precio BTC (USDT)',
+                        data: [],
+                        borderColor: '#fff',
+                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                        tension: 0.1,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { grid: { color: 'rgba(255,255,255,0.1)' } }
+                    }
+                }
+            });
+        }
+
+        window.comprar = function() {
+            let cantidad = parseFloat(document.getElementById('cantidad').value);
+            if (isNaN(cantidad) || cantidad <= 0) {
+                document.getElementById('mensaje-operacion').innerText = 'Cantidad inválida';
+                return;
+            }
+            let costo = cantidad * precioBTC;
+            if (costo > saldoUSDT) {
+                document.getElementById('mensaje-operacion').innerText = 'Saldo USDT insuficiente';
+                return;
+            }
+            saldoUSDT -= costo;
+            saldoBTC += cantidad;
+            actualizarInterfazSaldo();
+            document.getElementById('mensaje-operacion').innerText = `✅ Comprados ${cantidad.toFixed(4)} BTC por ${costo.toFixed(2)} USDT`;
+            guardarCambiosLocales();
+        };
+
+        window.vender = function() {
+            let cantidad = parseFloat(document.getElementById('cantidad').value);
+            if (isNaN(cantidad) || cantidad <= 0) {
+                document.getElementById('mensaje-operacion').innerText = 'Cantidad inválida';
+                return;
+            }
+            if (cantidad > saldoBTC) {
+                document.getElementById('mensaje-operacion').innerText = 'BTC insuficiente';
+                return;
+            }
+            let ganancia = cantidad * precioBTC;
+            saldoBTC -= cantidad;
+            saldoUSDT += ganancia;
+            actualizarInterfazSaldo();
+            document.getElementById('mensaje-operacion').innerText = `✅ Vendidos ${cantidad.toFixed(4)} BTC por ${ganancia.toFixed(2)} USDT`;
+            guardarCambiosLocales();
+        };
+
+        function guardarCambiosLocales() {
+            localStorage.setItem('saldoUSDT_' + usuario, saldoUSDT);
+            localStorage.setItem('saldoBTC_' + usuario, saldoBTC);
+            if (!usuariosData[usuario]) usuariosData[usuario] = {};
+            usuariosData[usuario].saldoUSDT = saldoUSDT;
+            usuariosData[usuario].btc = saldoBTC;
+        }
+
+        window.iniciarStaking = function() {
+            let cantidad = parseFloat(document.getElementById('staking-cantidad').value);
+            if (isNaN(cantidad) || cantidad <= 0) {
+                document.getElementById('staking-info').innerText = 'Cantidad inválida';
+                return;
+            }
+            if (cantidad > saldoUSDT) {
+                document.getElementById('staking-info').innerText = 'Saldo insuficiente';
+                return;
+            }
+            document.getElementById('staking-info').innerText = `🔒 Has bloqueado ${cantidad} USDT. Vuelve mañana para reclamar intereses.`;
+        };
+
+        window.cerrarSesion = function() {
+            localStorage.removeItem('usuario');
+            window.location.href = 'index.html';
+        };
+
+        window.onload = function() {
+            initChart();
+            cargarDatos();
+            setInterval(actualizarPrecio, 10000);
+        };
+    </script>
+</body>
+</html>

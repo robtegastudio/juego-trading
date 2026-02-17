@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego Trading - Inicio</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="glass-card" style="text-align: center;">
+            <h1>✨ Juego de Trading ✨</h1>
+            <h2>Iniciar sesión</h2>
+            <p>Elige un nombre de usuario (no necesita contraseña real)</p>
+            <input type="text" id="username" placeholder="Tu nombre de usuario" required>
+            <button onclick="iniciarSesion()">Entrar al juego</button>
+            <p id="error-message" style="color: #ff9999;"></p>
+        </div>
+    </div>
+
+    <script>
+        function iniciarSesion() {
+            const username = document.getElementById('username').value.trim();
+            if (username === '') {
+                document.getElementById('error-message').innerText = 'Escribe un nombre';
+                return;
+            }
+            localStorage.setItem('usuario', username);
+            window.location.href = 'dashboard.html';
+        }
+    </script>
+</body>
+</html>
