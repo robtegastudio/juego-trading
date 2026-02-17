@@ -1,0 +1,49 @@
+name: Update Prices
+on:
+  schedule:
+    - cron: '*/5 * * * *'   # cada 5 minutos
+  workflow_dispatch:         # permitir ejecución manual
+
+jobs:
+  update-prices:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Generate prices
+        run: |
+          python -c "
+import json, os, random, time
+
+def random_walk(prev, volatility=0.02):
+    change = random.gauss(0, volatility)
+    return max(prev * (1 + change), 0.01)
+
+price_file = 'prices.json'
+if os.path.exists(price_file):
+    with open(price_file) as f:
+        data = json.load(f)
+    btc_prev = data.get('BTC', {}).get('precio', 50000)
+else:
+    btc_prev = 50000
+
+new_btc = random_walk(btc_prev, volatility=0.015)
+
+with open(price_file, 'w') as f:
+    json.dump({
+        'BTC': {'precio': round(new_btc, 2), 'timestamp': time.time()}
+    }, f, indent=2)
+"
+
+      - name: Commit and push if changed
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add prices.json
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Update prices [skip ci]" && git push)
