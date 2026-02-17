@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi Perfil - Juego Trading</title>
+    <title>Mi Perfil</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -16,12 +16,11 @@
         </div>
 
         <h1>Mi Perfil</h1>
-        
+
         <div class="card">
-            <h2>Tarjetas premium obtenidas</h2>
-            <div id="tarjetas-lista" class="tarjetas-container">
-                <p>Cargando...</p>
-            </div>
+            <h2>Tarjetas virtuales</h2>
+            <div id="tarjetas-container">Cargando...</div>
+            <button onclick="solicitarTarjeta()" id="btn-solicitar">Solicitar nueva tarjeta (100 USDT)</button>
         </div>
 
         <div class="card">
@@ -48,155 +47,81 @@
 
         <div class="card">
             <h2>Logros</h2>
-            <div id="logros-lista">
-                <p>Los logros se desbloquean automáticamente.</p>
-            </div>
+            <div id="logros-lista">Cargando...</div>
         </div>
     </div>
 
     <script>
-        // Cerrar sesión
-        function cerrarSesion() {
-            localStorage.removeItem('usuario');
-            window.location.href = 'index.html';
-        }
+        const GITHUB_TOKEN = 'poner-tu-token-aqui';
+        const REPO = 'robtegastudio/juego-trading';
 
-        // Cargar datos del perfil
+        let usuario = localStorage.getItem('usuario');
+        if (!usuario) window.location.href = 'index.html';
+        document.getElementById('nombre-usuario').innerText = usuario;
+
         async function cargarPerfil() {
-            const usuario = localStorage.getItem('usuario');
-            if (!usuario) {
-                window.location.href = 'index.html';
-                return;
-            }
-
-            document.getElementById('nombre-usuario').innerText = usuario;
-
             try {
-                // Cargar users.json
-                const response = await fetch('users.json?t=' + Date.now());
-                let saldoUSDT = 1000, saldoBTC = 0, tarjetas = [];
+                const res = await fetch('users.json?t=' + Date.now());
+                const users = await res.json();
+                const userData = users[usuario] || { saldoUSDT: 1000, btc: 0, tarjetas: [] };
+                document.getElementById('saldo-usdt').innerText = userData.saldoUSDT.toFixed(2);
+                document.getElementById('saldo-btc').innerText = (userData.btc || 0).toFixed(4);
 
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data[usuario]) {
-                        saldoUSDT = data[usuario].saldoUSDT || 1000;
-                        saldoBTC = data[usuario].btc || 0;
-                        tarjetas = data[usuario].tarjetas || [];
-                    }
-                } else {
-                    // Si no existe users.json, usamos valores por defecto y localStorage
-                    saldoUSDT = parseFloat(localStorage.getItem('saldoUSDT_' + usuario)) || 1000;
-                    saldoBTC = parseFloat(localStorage.getItem('saldoBTC_' + usuario)) || 0;
-                }
-
-                // Actualizar estadísticas
-                document.getElementById('saldo-usdt').innerText = saldoUSDT.toFixed(2);
-                document.getElementById('saldo-btc').innerText = saldoBTC.toFixed(4);
-
-                // Obtener precio actual para calcular valor total
+                // Precio para valor total
                 let precioBTC = 50000;
                 try {
-                    const priceResponse = await fetch('prices.json?t=' + Date.now());
-                    if (priceResponse.ok) {
-                        const priceData = await priceResponse.json();
+                    const priceRes = await fetch('prices.json?t=' + Date.now());
+                    if (priceRes.ok) {
+                        const priceData = await priceRes.json();
                         precioBTC = priceData.BTC.precio;
                     }
                 } catch (e) {}
-
-                const valorTotal = saldoUSDT + (saldoBTC * precioBTC);
+                const valorTotal = userData.saldoUSDT + (userData.btc || 0) * precioBTC;
                 document.getElementById('valor-total').innerText = valorTotal.toFixed(2) + ' USDT';
 
                 // Mostrar tarjetas
-                const tarjetasContainer = document.getElementById('tarjetas-lista');
+                const tarjetas = userData.tarjetas || [];
+                let html = '';
                 if (tarjetas.length === 0) {
-                    tarjetasContainer.innerHTML = '<p>Aún no tienes tarjetas. Sigue operando para ganarlas.</p>';
+                    html = '<p>No tienes tarjetas aún.</p>';
                 } else {
-                    let html = '<div class="tarjetas-grid">';
-                    tarjetas.forEach(tarjeta => {
-                        html += `<div class="tarjeta-item">🏆 ${tarjeta}</div>`;
+                    html = '<div class="tarjetas-grid">';
+                    tarjetas.forEach(t => {
+                        html += `<div class="tarjeta-item" style="background: linear-gradient(135deg, ${t.color1}, ${t.color2});">
+                            <div style="font-size:1.2rem;">${t.tipo}</div>
+                            <div>**** **** **** ${t.ultimos4}</div>
+                            <div>CVV: ${t.cvv}</div>
+                            <div>Exp: ${t.mes}/${t.anio}</div>
+                        </div>`;
                     });
                     html += '</div>';
-                    tarjetasContainer.innerHTML = html;
                 }
+                document.getElementById('tarjetas-container').innerHTML = html;
 
-                // Simular logros según saldo (esto podría venir de users.json también)
-                const logrosContainer = document.getElementById('logros-lista');
-                let logrosHTML = '<ul>';
-                if (saldoUSDT >= 5000) logrosHTML += '<li>💰 Acumulador de plata (5000 USDT)</li>';
-                if (saldoUSDT >= 10000) logrosHTML += '<li>💎 Acumulador de oro (10000 USDT)</li>';
-                if (saldoBTC >= 0.1) logrosHTML += '<li>🪙 Ballena de BTC (0.1 BTC)</li>';
-                if (logrosHTML === '<ul>') logrosHTML += '<li>Sin logros aún</li>';
-                logrosHTML += '</ul>';
-                logrosContainer.innerHTML = logrosHTML;
-
-            } catch (error) {
-                console.error('Error cargando perfil:', error);
-                document.getElementById('tarjetas-lista').innerHTML = '<p>Error al cargar datos.</p>';
+                // Logros simulados
+                let logros = [];
+                if (userData.saldoUSDT >= 5000) logros.push('💰 Acumulador de plata (5000 USDT)');
+                if (userData.saldoUSDT >= 10000) logros.push('💎 Acumulador de oro (10000 USDT)');
+                if (userData.btc >= 0.1) logros.push('🪙 Ballena de BTC (0.1 BTC)');
+                if (logros.length === 0) logros.push('Sin logros aún');
+                document.getElementById('logros-lista').innerHTML = '<ul>' + logros.map(l => `<li>${l}</li>`).join('') + '</ul>';
+            } catch (e) {
+                console.error(e);
+                document.getElementById('tarjetas-container').innerHTML = 'Error al cargar';
             }
         }
 
-        // Ejecutar al cargar la página
+        window.solicitarTarjeta = async function() {
+            // Simplemente muestra mensaje; en versión completa, descontaría saldo y crearía issue ADMIN:ENVIAR_TARJETA
+            alert('Función en desarrollo. Por ahora, el admin puede enviarte tarjetas.');
+        };
+
+        window.cerrarSesion = function() {
+            localStorage.removeItem('usuario');
+            window.location.href = 'index.html';
+        };
+
         window.onload = cargarPerfil;
     </script>
-
-    <style>
-        /* Estilos adicionales específicos para el perfil */
-        .estadisticas-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-top: 15px;
-        }
-
-        .estadistica-item {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 15px;
-            border-radius: 10px;
-            backdrop-filter: blur(5px);
-        }
-
-        .estadistica-label {
-            display: block;
-            font-size: 0.9em;
-            opacity: 0.8;
-            margin-bottom: 5px;
-        }
-
-        .estadistica-value {
-            display: block;
-            font-size: 1.4em;
-            font-weight: bold;
-            color: #f0b90b;
-        }
-
-        .tarjetas-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .tarjeta-item {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-            font-weight: 600;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-
-        #logros-lista ul {
-            list-style: none;
-            padding: 0;
-        }
-
-        #logros-lista li {
-            background: rgba(255, 255, 255, 0.1);
-            margin: 10px 0;
-            padding: 10px 15px;
-            border-radius: 8px;
-            border-left: 4px solid #f0b90b;
-        }
-    </style>
 </body>
 </html>
