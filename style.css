@@ -176,7 +176,7 @@ button:active {
 }
 
 .price-box p {
-    color: #4caf50; /* verde para precio */
+    color: #4caf50;
 }
 
 #timestamp-precio {
@@ -216,7 +216,7 @@ button:active {
 
 .tarjetas-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 15px;
     margin-top: 20px;
 }
@@ -233,7 +233,7 @@ button:active {
     backdrop-filter: blur(5px);
 }
 
-#mensajes, #estado, #mensaje-operacion, #staking-info {
+#mensajes, #estado, #mensaje-operacion, #staking-info, #admin-mensaje {
     background: rgba(0, 0, 0, 0.3);
     padding: 15px;
     border-radius: 12px;
@@ -242,7 +242,6 @@ button:active {
     font-size: 0.95rem;
 }
 
-/* Estilos para móviles */
 @media (max-width: 768px) {
     body { padding: 10px; }
     .container { padding: 20px; }
@@ -253,7 +252,6 @@ button:active {
     .estadistica-value { font-size: 1.3rem; }
 }
 
-/* Scrollbar personalizada (opcional) */
 ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
