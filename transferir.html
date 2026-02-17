@@ -12,6 +12,7 @@
             <a href="dashboard.html">Trading</a>
             <a href="transferir.html">Transferir</a>
             <a href="perfil.html">Mi Perfil</a>
+            <a href="admin.html" id="admin-link" style="display:none;">Admin</a>
             <a href="#" onclick="cerrarSesion()">Cerrar sesión</a>
         </div>
 
@@ -39,6 +40,19 @@
 
         let usuario = localStorage.getItem('usuario');
         if (!usuario) window.location.href = 'index.html';
+
+        // Cargar rol para mostrar enlace admin
+        async function cargarRol() {
+            try {
+                const res = await fetch('users.json?t=' + Date.now());
+                const users = await res.json();
+                if (users[usuario] && users[usuario].rol === 'admin') {
+                    document.getElementById('admin-link').style.display = 'inline-block';
+                }
+            } catch (e) {
+                console.error('Error al cargar rol', e);
+            }
+        }
 
         window.transferir = async function() {
             const destino = document.getElementById('destino').value.trim();
@@ -90,6 +104,10 @@
         window.cerrarSesion = function() {
             localStorage.removeItem('usuario');
             window.location.href = 'index.html';
+        };
+
+        window.onload = function() {
+            cargarRol();
         };
     </script>
 </body>
