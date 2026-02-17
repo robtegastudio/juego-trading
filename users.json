@@ -1,0 +1,11 @@
+{
+  "test": {
+    "saldoUSDT": 1000,
+    "btc": 0,
+    "tarjetas": [],
+    "movimientos": [],
+    "bloqueado": false,
+    "rol": "user",
+    "password": "123"
+  }
+}
