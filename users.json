@@ -1,6 +1,6 @@
 {
   "test": {
-    "saldoUSDT": 10.0,
+    "saldoUSDT": 210.0,
     "btc": 0,
     "tarjetas": [
       {
@@ -13,16 +13,30 @@
         "color2": "#b06e2b"
       }
     ],
-    "movimientos": [],
+    "movimientos": [
+      {
+        "tipo": "transferencia_recibida",
+        "origen": "robtegastudio",
+        "monto": 200.0,
+        "fecha": "2026-02-17T03:34:48.117114"
+      }
+    ],
     "bloqueado": false,
     "rol": "user",
     "password": "123"
   },
   "robtegastudio": {
-    "saldoUSDT": 1000,
+    "saldoUSDT": 800.0,
     "btc": 0,
     "tarjetas": [],
-    "movimientos": [],
+    "movimientos": [
+      {
+        "tipo": "transferencia_enviada",
+        "destino": "test",
+        "monto": 200.0,
+        "fecha": "2026-02-17T03:34:48.117109"
+      }
+    ],
     "bloqueado": false,
     "rol": "admin",
     "password": "2121."
